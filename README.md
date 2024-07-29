@@ -1,14 +1,14 @@
-Book Store Application
-Overview
+#Book Store Application
+##Overview
 This application is designed to display all the books available for sale on the home page, allowing users to easily browse through the products. It includes various user roles with specific functionalities.
 
-Features
-General Features
-Home Page: Displays all books for sale.
-User Authentication:
-Login and Register buttons.
-Multiple roles: Admin, Customer, Employee, Company.
-User Roles
+##Features
+##General Features
+* Home Page: Displays all books for sale.
+* User Authentication:
+* Login and Register buttons.
+* Multiple roles: Admin, Customer, Employee, Company.
+##User Roles
 Customer Role
 View Products: Customers can see all products when logging in.
 Product Details: Navigate to view detailed information about each product.
