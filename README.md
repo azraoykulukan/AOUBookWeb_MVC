@@ -1,9 +1,9 @@
-#Book Store Application
-##Overview
+# Book Store Application
+## Overview
 This application is designed to display all the books available for sale on the home page, allowing users to easily browse through the products. It includes various user roles with specific functionalities.
 
-##Features
-##General Features
+## Features
+## General Features
 * Home Page: Displays all books for sale.
 * User Authentication:
 * Login and Register buttons.
