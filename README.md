@@ -4,7 +4,7 @@ This application is designed to display all the books available for sale on the 
 
 ## Features
 ## General Features
-** Home Page:** Displays all books for sale.
+**Home Page:** Displays all books for sale.
 * User Authentication:
 * Login and Register buttons.
 * Multiple roles: Admin, Customer, Employee, Company.
