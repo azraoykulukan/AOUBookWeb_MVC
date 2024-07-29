@@ -8,12 +8,12 @@ This application is designed to display all the books available for sale on the 
 * User Authentication:
 * Login and Register buttons.
 * Multiple roles: Admin, Customer, Employee, Company.
-##User Roles
-Customer Role
-View Products: Customers can see all products when logging in.
-Product Details: Navigate to view detailed information about each product.
-Admin Role
-CRUD Operations: Admins can perform Create, Read, Update, and Delete operations on products and categories.
+## User Roles
+* Customer Role
+* View Products: * Customers can see all products when logging in.
+* Product Details: * Navigate to view detailed information about each product.
+## Admin Role
+* CRUD Operations: * Admins can perform Create, Read, Update, and Delete operations on products and categories.
 Content Management: Special content management options are available in the drop-down menu based on the role.
 View Categories: See all product categories.
 Create a New Category: Add new categories with validation.
