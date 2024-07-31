@@ -1,0 +1,6 @@
+@AOUBook.Api_HostAddress = http://localhost:5031
+
+GET {{AOUBook.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
