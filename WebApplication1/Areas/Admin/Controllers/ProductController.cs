@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using AOUBook.Models.ViewModels;
 using AOUBook.Utility;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace AOUBook.Areas.Admin.Controllers
 {
@@ -15,19 +19,39 @@ namespace AOUBook.Areas.Admin.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        private readonly HttpClient _httpClient;
+        private readonly string _apiUrl = "https://localhost:7200/api/Product";
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment, HttpClient httpClient)
         {
             _unitOfWork = unitOfWork;
             _webHostEnvironment = webHostEnvironment;
+            _httpClient = httpClient;
         }
-        public IActionResult Index()
+        public async Task <IActionResult> Index()
         {
-            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
+            var response = await _httpClient.GetAsync(_apiUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var products = JsonConvert.DeserializeObject<List<ProductVM>>(content);
+                return View(products);
+            }
+            else
+            {
+                // Handle error response
+                //List<CategoryViewModel> objCategoryList = _unitOfWork.Category.GetAll().Select(x => new CategoryViewModel
+                //{
+                //    Id = x.Id,
+                //    Name = x.Name,
+                //    DisplayOrder = x.DisplayOrder
+                //}).ToList();
+                return View(new List<ProductVM>());
+            }
 
-            return View(objProductList);
         }
         public IActionResult Upsert(int? id)
         {
+
             ProductVM productVM = new()
             {
                 CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
@@ -50,7 +74,7 @@ namespace AOUBook.Areas.Admin.Controllers
             }
         }
         [HttpPost]
-        public IActionResult Upsert(ProductVM productVM, IFormFile? file)
+        public async Task <IActionResult> Upsert(ProductVM productVM, IFormFile? file)
         {
 
             if (ModelState.IsValid)
@@ -61,18 +85,18 @@ namespace AOUBook.Areas.Admin.Controllers
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     string productPath = Path.Combine(wwwRootPath, @"images\product");
 
-                    if(!string .IsNullOrEmpty(productVM.Product.ImageUrl))
+                    if (!string.IsNullOrEmpty(productVM.Product.ImageUrl))
                     {
                         //Delete old image
                         var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
 
-                        if(System.IO.File.Exists(oldImagePath))
+                        if (System.IO.File.Exists(oldImagePath))
                         {
                             System.IO.File.Delete(oldImagePath);
                         }
                     }
-                    
-                    using( var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+
+                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
                     {
                         file.CopyTo(fileStream);
                     }
@@ -80,18 +104,53 @@ namespace AOUBook.Areas.Admin.Controllers
                     productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
 
+                var jsonContent = JsonConvert.SerializeObject(productVM.Product); 
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json"); 
+
+
                 if (productVM.Product.Id == 0)
                 {
-                    _unitOfWork.Product.Add(productVM.Product);
+
+                    var response = await _httpClient.PostAsync(_apiUrl, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["success"] = "Product created successfully";
+
+                    }
+                else
+                {
+                        ModelState.AddModelError("", "Error creating product: " + response.ReasonPhrase);
+                        productVM.CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
+                        {
+                            Text = u.Name,
+                            Value = u.Id.ToString()
+                        });
+                        return View(productVM);
+                    }
                 }
                 else
                 {
-                    _unitOfWork.Product.Update(productVM.Product);
+                    var response = await _httpClient.PutAsync($"{_apiUrl}/{productVM.Product.Id}", content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["success"] = "Product updated successfully";
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Error updating product: " + response.ReasonPhrase);
+                        productVM.CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
+                        {
+                            Text = u.Name,
+                            Value = u.Id.ToString()
+                        });
+                        return View(productVM);
+                    }
                 }
-                _unitOfWork.Save();
-                TempData["success"] = "Product created successfully";
+
                 return RedirectToAction("Index");
+
             }
+
             else
             {
                 productVM.CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
@@ -100,10 +159,9 @@ namespace AOUBook.Areas.Admin.Controllers
                     Value = u.Id.ToString()
                 });
                 return View(productVM);
-
             }
-        }
 
+        }
 
         #region API CALLS
         [HttpGet]
@@ -118,8 +176,8 @@ namespace AOUBook.Areas.Admin.Controllers
         public IActionResult Delete(int? id)
         {
             var productToBeDeleted = _unitOfWork.Product.Get(u => u.Id == id);
-            if(productToBeDeleted == null) 
-                           {
+            if (productToBeDeleted == null)
+            {
                 return Json(new { success = false, message = "Error while deleting" });
             }
 
@@ -137,5 +195,6 @@ namespace AOUBook.Areas.Admin.Controllers
         }
 
         #endregion
+
     }
 }

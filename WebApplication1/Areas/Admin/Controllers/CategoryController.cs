@@ -44,8 +44,6 @@ namespace AOUBook.Areas.Admin.Controllers
                 //}).ToList();
                 return View(new List<CategoryViewModel>());
             }
-            //List<Category> objCategoryList = _unitOfWork.Category.GetAll().ToList();
-            //return View(objCategoryList);
         }
         public IActionResult Create()
         {
@@ -74,11 +72,6 @@ namespace AOUBook.Areas.Admin.Controllers
                 {
                     ModelState.AddModelError(string.Empty, "An error occurred while creating the category.");
                 }
-
-                //_unitOfWork.Category.Add(obj);
-                //_unitOfWork.Save();
-                //TempData["success"] = "Category created successfully";
-                //return RedirectToAction("Index");
             }
             return View();
         }
@@ -99,18 +92,6 @@ namespace AOUBook.Areas.Admin.Controllers
                 return View(category);
             }
             return NotFound();
-
-            //Category? categoryFromDb = _unitOfWork.Category.Get(u => u.Id == id);
-            //Category? categoryFromDb1 = _db.Categories.FirstOrDefault(u=>u.Id==id);
-            //Category? categoryFromDb2 = _db.Categories.Where(u=>u.Id==id).FirstOrDefault();
-
-
-
-            //if (categoryFromDb == null)
-            //{
-            //    return NotFound();
-            //}
-            //return View(categoryFromDb);
         }
         [HttpPost]
         public async Task <IActionResult> Edit(Category obj)
@@ -135,12 +116,6 @@ namespace AOUBook.Areas.Admin.Controllers
                 {
                     ModelState.AddModelError(string.Empty, "An error occurred while updating the category.");
                 }
-                
-
-                //_unitOfWork.Category.Update(obj);
-                //_unitOfWork.Save();
-                //TempData["success"] = "Category Updated Successfully";
-                //return RedirectToAction("Index");
 
             }
             return View();
@@ -165,12 +140,6 @@ namespace AOUBook.Areas.Admin.Controllers
                 return View(category);
             }
             return NotFound();
-
-            //if (categoryFromDb == null)
-            //{
-            //    return NotFound();
-            //}
-            //return View(categoryFromDb);
         }
         [HttpPost, ActionName("Delete")]
         public async Task <IActionResult> DeletePOST(int? id)
@@ -191,15 +160,6 @@ namespace AOUBook.Areas.Admin.Controllers
                 ModelState.AddModelError(string.Empty, "An error occurred while deleting the category.");
                 return View();
             }
-            //Category? obj = _unitOfWork.Category.Get(u => u.Id == id);
-            //if (obj == null)
-            //{
-            //    return NotFound();
-            //}
-            //_unitOfWork.Category.Remove(obj);
-            //_unitOfWork.Save();
-            //TempData["success"] = "Category deleted Successfully";
-            //return RedirectToAction("Index");
         }
     }
 }
