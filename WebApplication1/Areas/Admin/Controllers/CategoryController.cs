@@ -7,6 +7,7 @@ using AOUBook.Utility;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Text;
+using AutoMapper;
 
 namespace AOUBook.Areas.Admin.Controllers
 {
@@ -15,12 +16,14 @@ namespace AOUBook.Areas.Admin.Controllers
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        
         private readonly HttpClient _httpClient;
         private readonly string _apiUrl = "https://localhost:7200/api/Category";
         public CategoryController(IUnitOfWork unitOfWork, HttpClient httpClient)
         {
             _unitOfWork = unitOfWork;
             _httpClient = httpClient;
+            
 
         }
 

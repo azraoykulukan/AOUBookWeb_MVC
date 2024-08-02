@@ -1,10 +1,15 @@
-﻿using AOUBook.DataAccess.Repository.IRepository;
+﻿using AOUBook.Api.Models;
+using AOUBook.Api.Validatior;
+using AOUBook.DataAccess.Repository.IRepository;
 using AOUBook.Models;
 using AOUBook.Models.ViewModels;
+using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
+using static AOUBook.Api.Models.ProductResponse;
 
 
 namespace AOUBook.Api.Controllers
@@ -15,46 +20,48 @@ namespace AOUBook.Api.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ProductController> _logger;
+        private readonly IMapper _mapper;
+        private readonly IValidator<ProductVM> _productValidator;
 
-        public ProductController(IUnitOfWork unitOfWork, ILogger<ProductController> logger)
+
+        public ProductController(IUnitOfWork unitOfWork, ILogger<ProductController> logger, IMapper mapper, IValidator<ProductVM> productValidator)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _mapper = mapper;
+            _productValidator = productValidator;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Product>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<AOUBook.Models.Product>), StatusCodes.Status200OK)]
         public IActionResult Get()
         {
-            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
-            return Ok(productList);
+            IEnumerable<AOUBook.Models.Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+            var mappedProduct = _mapper.Map<List<ProductResponse>>(productList);
+            return Ok(mappedProduct);
         }
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AOUBook.Models.Product), StatusCodes.Status200OK)]
         public IActionResult Get(int id)
         {
             var product = _unitOfWork.Product.Get(u => u.Id == id, includeProperties: "Category");
+            var mappedProduct = _mapper.Map<ProductResponse>(product);
+
             return Ok(product);
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(IEnumerable<Product>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<AOUBook.Models.Product>), StatusCodes.Status200OK)]
         public IActionResult Post([FromBody] ProductVM productVm)
         {
+            var validationResult = _productValidator.Validate(productVm);
 
-            if (ModelState.IsValid)
+            if (validationResult.IsValid)
             {
-                if (productVm.Product.Id != 0)
-                {
-                    _unitOfWork.Product.Update(productVm.Product);
-                }
-                else
-                {
-                    _unitOfWork.Product.Add(productVm.Product);
-                }
+                var mappedProduct = _mapper.Map<Product>(productVm.Product); //Ahmet Bey'e soralım, productvm dto
+                _unitOfWork.Product.Add(mappedProduct);
                 _unitOfWork.Save();
-                return Ok(productVm);
-
+                return Ok(mappedProduct);
             }
             else
             {
@@ -63,25 +70,35 @@ namespace AOUBook.Api.Controllers
                     Text = u.Name,
                     Value = u.Id.ToString()
                 });
-                return Ok(productVm);
+                return BadRequest(validationResult.Errors);
             }
-
         }
-
-
+    
         [HttpPut("{id}")]
+        [ProducesResponseType(typeof(IEnumerable<AOUBook.Models.Product>), StatusCodes.Status200OK)]
         public IActionResult Put(int id, [FromBody] ProductVM productVm)
         {
+            var validationResult = _productValidator.Validate(productVm);
             if (id != productVm.Product.Id)
             {
                 return BadRequest();
             }
-
-            productVm.Product.Id = id;
-            _unitOfWork.Product.Update(productVm.Product);
-            _unitOfWork.Save();
-
-            return Ok(productVm);
+            if (validationResult.IsValid)
+            {
+                var mappedProduct = _mapper.Map<Product>(productVm.Product);
+                _unitOfWork.Product.Update(productVm.Product);
+                _unitOfWork.Save();
+                return Ok(mappedProduct);
+            }
+            else
+            {
+                productVm.CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                });
+                return BadRequest(validationResult.Errors);
+            }
         }
 
         [HttpDelete("{id}")]
@@ -95,8 +112,10 @@ namespace AOUBook.Api.Controllers
 
             _unitOfWork.Product.Remove(product);
             _unitOfWork.Save();
+            var mappedProduct = _mapper.Map<ProductResponse>(product);
 
-            return NoContent();
+            //return NoContent();
+            return Ok(mappedProduct);
         }
 
 

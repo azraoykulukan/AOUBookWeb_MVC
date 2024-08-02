@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using AOUBook.Utility;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,8 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());  //Automapper
 
 var app = builder.Build();
 
@@ -51,3 +54,6 @@ app.MapControllerRoute(
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+
+

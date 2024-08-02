@@ -4,6 +4,12 @@ using AOUBook.Utility;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using AOUBook.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using FluentValidation;
+using System;
+using AOUBook.Models;
+using AOUBook.Api.Validatior;
+using AOUBook.Models.ViewModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +23,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+//builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
+//builder.Services.AddScoped<IValidator<ProductVM>, ProductValidatior> ();
+
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+
 
 
 
