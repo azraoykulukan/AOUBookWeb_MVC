@@ -58,7 +58,7 @@ namespace AOUBook.Api.Controllers
 
             if (validationResult.IsValid)
             {
-                var mappedProduct = _mapper.Map<Product>(productVm.Product); //Ahmet Bey'e soralım, productvm dto
+                var mappedProduct = _mapper.Map<Product>(productVm.Product); 
                 _unitOfWork.Product.Add(mappedProduct);
                 _unitOfWork.Save();
                 return Ok(mappedProduct);
